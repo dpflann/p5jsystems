@@ -28,6 +28,7 @@ var drawCell = function(cell) {
   shiftColor(cell);
   smooth();
   fill(cell.color);
+  noStroke();
   rect(cell.x, cell.y, cell.w, cell.h);
 };
 
