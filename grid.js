@@ -1,25 +1,29 @@
 var cW = window.innerWidth;
 var cH = window.innerHeight;
 var TwoPI = 2*Math.PI;
-var p = 750;
+// p was removed because now we transitioning between different colors points
+// the phase function was useful for moving between two colors
+// var t = Math.abs(2 * ((t / p) - Math.floor((t / p) + (1/2))));
+// cell.t = newT % (p + 1);
+// (1 - (i / numberOfRows)) * p, // Phase
 var shapes = [];
-var cellHeight = 15;
-var cellWidth = 15;
+var cellHeight = 30;
+var cellWidth = cellHeight;
 var numberOfCells = 0;
 var numberOfRows = 0;
 var clearScreen = true;
-//var img = null;
-var images = [];
-var nImages = 20;
+var gradientColors = [[100, 25, 255], [255, 255, 255], [0, 0, 255], [255, 60, 100], [45, 125, 200]];
 
-var cell = function(x, y, w, h, t, color) {
+var cell = function(x, y, w, h, t, cellColor) {
   return {
     "x": x || 0,
     "y": y || 0,
     "w": w || 15,
     "h": h || 15,
-    "t": t || 0,
-    "color": color
+    "t": t || 0, // a value between [0,1)
+    "color": cellColor,
+    "colorIndex": 0,
+    "colors": Object.assign([], gradientColors)
   };
 };
 
@@ -32,18 +36,28 @@ var drawCell = function(cell) {
   rect(cell.x, cell.y, cell.w, cell.h);
 };
 
-
 function shiftColor(cell) {
   var t = cell.t;
-  var val = Math.floor(255 * Math.abs(2 * ((t / p) - Math.floor((t / p) + (1/2)))));
-  cell.color = color(val, val, val);
-  cell.t = (cell.t + 5) % p;
-}
 
-function updateCell(cell) {
-  
-}
+  // determine "distance between colors"
+  var ci = cell.colorIndex;
+  var cj = (cell.colorIndex + 1) % cell.colors.length;
 
+  var R = (cell.colors[ci][0] + Math.floor((cell.colors[cj][0] - cell.colors[ci][0])) * t) % 256;
+  var G = (cell.colors[ci][1] + Math.floor((cell.colors[cj][1] - cell.colors[ci][1])) * t) % 256;
+  var B = (cell.colors[ci][2] + Math.floor((cell.colors[cj][2] - cell.colors[ci][2])) * t) % 256;
+
+  cell.color = color(R, G, B);
+
+  var newT = (t + .02);
+  if (newT > .97) { // this is a "magic" threshold, arbitrarily/intuitively selected...
+    cell.colorIndex = cj;
+    newT = 0;
+  }
+  cell.t = newT % 1;
+};
+
+function updateCell(cell) {};
 
 function keyTyped() {
   var newT = 0;
@@ -92,7 +106,7 @@ function keyTyped() {
     case "s":
       break;
     case "S":
-      newT = (.5) * p;
+      newT = (.5);
       break;
     case "g":
       clockwise = true;
@@ -134,48 +148,53 @@ function keyTyped() {
     for (var c = 0; c < numberOfCells; c++) {
       var currentCell = shapes[l][c];
       if (random) {
-        currentCell.t = Math.floor(Math.random() * p);
+        currentCell.t = Math.floor(Math.random());
       } else if (asRings) {
         if (l % 2 === remainder) {
           currentCell.t = newT;
         } else {
-          currentCell.t = (.5) * p;
+          currentCell.t = (.5);
         }
       } else if (gradient) {
         var coeff = currentCell.i / layerLength;
         if (clockwise) {
           coeff = 1 - coeff;
         }
-        currentCell.t = Math.floor(coeff * p);
+        currentCell.t = Math.floor(coeff);
       } else if (allAsOne) {
         // [0, (.5)*p] --> range for black to white
-        newT = Math.floor((counter / totalCircles) * (.5) * p);
+        newT = Math.floor((counter / totalCircles) * (.5));
         if (alternate) {
-          newT = Math.floor((.5) * p - newT);
+          newT = Math.floor((.5) - newT);
         }
         currentCell.t = newT;
         counter += 1;
       } else if (moveOnlyHorizontallyLeft) {
-        newT = (1 - (c / numberOfCells)) * p;
+        newT = (1 - (c / numberOfCells));
         currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
       } else if (moveOnlyHorizontallyRight) {
-        newT = (c / numberOfCells) * p;
+        newT = (c / numberOfCells);
         currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
       } else if (moveOnlyVerticallyUp) {
-        newT = (1 - (l / numberOfRows)) * p;
+        newT = (1 - (l / numberOfRows));
         currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
       } else if (moveOnlyVerticallyDown) {
-        newT = (l / numberOfRows) * p;
+        newT = (l / numberOfRows);
         currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
       } else {
-        currentCell.t = newT;
         currentCell.t = newT;
       }
     }
   }
-}
-
-
+};
 
 function setup() {
   createCanvas(window.innerWidth, window.innerHeight);
@@ -189,11 +208,11 @@ function setup() {
                           i*cellHeight,
                           cellWidth,
                           cellHeight,
-                          (1 - (i / numberOfRows)) * p, // Phase 
+                          (1 - (i / numberOfRows)),
                           color(randCol, randCol, randCol)));
     }
   }
-}
+};
 
 function draw() {
   frameRate(30);
@@ -203,44 +222,6 @@ function draw() {
   for (var i=0; i < numberOfRows; i++) {
     for (var j=0; j < numberOfCells; j++) {
       drawCell(shapes[i][j]);
-      //var randCol = Math.floor(255 * Math.random());
-      //shapes[i][j].color = color(randCol, randCol, randCol);
     }
   }
-}
-
-
-
-/// CODE SAM[]DLE GRAVEYARD \\\
-/*
-   * These are attemtps with creating images for the animation
-  img.loadPixels();
-  for (var i=0; i < img.width; i++) {
-    for (var j=0; j < img.height; j++) {
-      var randCol = Math.floor(255 * Math.random());
-      img.set(i, j, color(randCol, randCol, randCol));
-    }
-  }
-  img.updatePixels();
-  image(img, 0, 0, cW, cH);
-  */
-  /*
-  var x = Math.floor(nImages * Math.random());
-  image(images[x], 0, 0, cW, cH);
-  */
-  /*
-   * These are attemtps with creating images for the animation
-  for (var x=0; x < nImages; x++) {
-    var img = createImage(cW, cH);
-    img.loadPixels();
-    for (var i=0; i < img.width; i++) {
-      for (var j=0; j < img.height; j++) {
-        var randCol = Math.floor(255 * Math.random());
-        img.set(i, j, color(randCol, randCol, randCol));
-      }
-    }
-    img.updatePixels();
-    images.push(img);
-  }
-  */
-  //image(img, 0, 0, cW, cH);
+};
