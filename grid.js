@@ -78,10 +78,14 @@ function keyTyped() {
   var allAsOne = false;
   var move = false;
   var backToStart = false;
-  var moveOnlyVerticallyUp = false;
-  var moveOnlyVerticallyDown = false;
-  var moveOnlyHorizontallyLeft = false;
-  var moveOnlyHorizontallyRight = false;
+  var moveVerticallyUp = false;
+  var moveVerticallyDown = false;
+  var moveHorizontallyLeft = false;
+  var moveHorizontallyRight = false;
+  var moveDiagonallyRightDown = false;
+  var moveDiagonallyLeftUp = false;
+  var moveDiagonallyRightUp = false;
+  var moveDiagonallyLeftDown = false;
   var direction = 1;
   var increaseRadius = false;
   var decreaseRadius = false;
@@ -92,16 +96,28 @@ function keyTyped() {
 
   switch (key) {
     case "v":
-      moveOnlyVerticallyUp = true;
+      moveVerticallyUp = true;
       break;
     case "V":
-      moveOnlyVerticallyDown = true;
+      moveVerticallyDown = true;
       break;
     case "h":
-      moveOnlyHorizontallyLeft = true;
+      moveHorizontallyLeft = true;
       break;
     case "H":
-      moveOnlyHorizontallyRight = true;
+      moveHorizontallyRight = true;
+      break;
+    case "d":
+      moveDiagonallyRightDown = true;
+      break;
+    case "D":
+      moveDiagonallyLeftUp = true;
+      break;
+    case "w":
+      moveDiagonallyRightUp = true;
+      break;
+    case "W":
+      moveDiagonallyLeftDown = true;
       break;
     case "a":
       allAsOne = true;
@@ -186,27 +202,47 @@ function keyTyped() {
         }
         currentCell.t = newT;
         counter += 1;
-      } else if (moveOnlyHorizontallyLeft) {
+      } else if (moveHorizontallyLeft) {
         newT = (1 - (c / numberOfCells));
         currentCell.t = newT;
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
-      } else if (moveOnlyHorizontallyRight) {
+      } else if (moveHorizontallyRight) {
         newT = (c / numberOfCells);
         currentCell.t = newT;
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
-      } else if (moveOnlyVerticallyUp) {
+      } else if (moveVerticallyUp) {
         newT = (1 - (l / numberOfRows));
         currentCell.t = newT;
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
-      } else if (moveOnlyVerticallyDown) {
+      } else if (moveVerticallyDown) {
         newT = (l / numberOfRows);
         currentCell.t = newT;
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
-      } else {
+      } else if (moveDiagonallyRightDown) {
+        newT = (1 - ((l + c) / (numberOfRows + numberOfCells)));
+        currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
+      } else if (moveDiagonallyLeftUp) {
+        newT = ((l + c) / (numberOfRows + numberOfCells));
+        currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
+      } else if (moveDiagonallyLeftDown) {
+        newT = ((Math.abs(l - numberOfRows) + c) / (numberOfRows + numberOfCells));
+        currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
+      } else if (moveDiagonallyRightUp) {
+        newT = ((l + c) / (numberOfRows + numberOfCells));
+        newT = (1 - ((Math.abs(l - numberOfRows) + c) / (numberOfRows + numberOfCells)));
+        currentCell.t = newT;
+        // without reseting the colorIndex - this resulted in a patchwork of colors
+        currentCell.colorIndex = 0;
       }
     }
   }
