@@ -13,6 +13,8 @@ var numberOfCells = 0;
 var numberOfRows = 0;
 var clearScreen = true;
 var gradientColors = [[100, 25, 255], [255, 255, 255], [0, 0, 255], [255, 60, 100], [45, 125, 200]];
+var RECT = 0;
+var ELLIPSE = 1;
 
 var cell = function(x, y, w, h, t, cellColor) {
   return {
@@ -23,7 +25,8 @@ var cell = function(x, y, w, h, t, cellColor) {
     "t": t || 0, // a value between [0,1)
     "color": cellColor,
     "colorIndex": 0,
-    "colors": Object.assign([], gradientColors)
+    "colors": Object.assign([], gradientColors),
+    "shape": RECT
   };
 };
 
@@ -33,7 +36,11 @@ var drawCell = function(cell) {
   smooth();
   fill(cell.color);
   noStroke();
-  rect(cell.x, cell.y, cell.w, cell.h);
+  if (cell.shape == RECT) {
+    rect(cell.x, cell.y, cell.w, cell.h);
+  } else if (cell.shape == ELLIPSE) {
+    ellipse(cell.x + cell.w / 2, cell.y + cell.h / 2, cell.w, cell.h);
+  }
 };
 
 function shiftColor(cell) {
@@ -78,8 +85,8 @@ function keyTyped() {
   var direction = 1;
   var increaseRadius = false;
   var decreaseRadius = false;
-  var drawTriangles = false;
   var drawEllipses = false;
+  var drawRects = false;
   var drawLines = false;
   var flip = false;
 
@@ -115,9 +122,14 @@ function keyTyped() {
     case "G":
       gradient = true;
       break;
-    case "r":
     case "R":
       random = true;
+      break;
+    case "r":
+      drawRects = true;
+      break;
+    case "e":
+      drawEllipses = true;
       break;
     case "i":
     case "I":
@@ -147,6 +159,11 @@ function keyTyped() {
   for (var l = 0; l < numberOfRows; l++) {
     for (var c = 0; c < numberOfCells; c++) {
       var currentCell = shapes[l][c];
+      if (drawEllipses) {
+        currentCell.shape = ELLIPSE;
+      } else if (drawRects) {
+        currentCell.shape = RECT;
+      }
       if (random) {
         currentCell.t = Math.floor(Math.random());
       } else if (asRings) {
@@ -190,7 +207,6 @@ function keyTyped() {
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
       } else {
-        currentCell.t = newT;
       }
     }
   }
