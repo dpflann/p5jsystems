@@ -26,7 +26,10 @@ var cell = function(x, y, w, h, t, cellColor) {
     "color": cellColor,
     "colorIndex": 0,
     "colors": Object.assign([], gradientColors),
-    "shape": RECT
+    "shape": RECT,
+    "groups": {
+        "squares": -1
+    }
   };
 };
 
@@ -42,6 +45,44 @@ var drawCell = function(cell) {
     ellipse(cell.x + cell.w / 2, cell.y + cell.h / 2, cell.w, cell.h);
   }
 };
+
+/*
+* 000000000
+* 011111110
+* 012222210
+* 012333210
+* 012343210
+* 012333210
+* 012222210
+* 011111110
+* 000000000
+*/
+function assignSquareGroups(cells) {
+    var cellsLen = cells.length;
+    var groups = Math.ceil(cellsLen / 2);
+    for (var i = 0; i < groups; i++) {
+        var len = cells[i].length;
+        var mid = Math.ceil(len / 2);
+        var gs = [];
+        for (var k = 0; k <= i; k++) {
+            gs.push(k);
+        }
+        var currentGroup = gs.shift();
+        // There has to be a simpler mathematical way, I'm sad....
+        for (var j = 0; j <= mid; j++) {
+            console.log("Setting squares", i, j, k, currentGroup);
+            cells[i][j]["groups"]["squares"] = currentGroup;
+            cells[i][len - 1 - j]["groups"]["squares"] = currentGroup;
+            cells[cellsLen - 1 - i][j]["groups"]["squares"] = currentGroup;
+            cells[cellsLen - 1 - i][len - 1 - j]["groups"]["squares"] = currentGroup;
+            var nextGroup = gs.shift();
+            if (nextGroup !== undefined) {
+                currentGroup = nextGroup;
+            }
+        }
+    }
+}
+
 
 function shiftColor(cell) {
   var t = cell.t;
@@ -93,6 +134,7 @@ function keyTyped() {
   var drawRects = false;
   var drawLines = false;
   var flip = false;
+  var squares = false;
 
   switch (key) {
     case "v":
@@ -127,6 +169,7 @@ function keyTyped() {
       alternate = true;
       break;
     case "s":
+      squares = true;
       break;
     case "S":
       newT = (.5);
@@ -243,6 +286,11 @@ function keyTyped() {
         currentCell.t = newT;
         // without reseting the colorIndex - this resulted in a patchwork of colors
         currentCell.colorIndex = 0;
+      } else if (squares) {
+        // adjust the newT based upon the group number
+        newT = (currentCell.groups.squares / numberOfRows / 2);
+        currentCell.t = newT;
+        currentCell.colorIndex = 0;
       }
     }
   }
@@ -264,6 +312,7 @@ function setup() {
                           color(randCol, randCol, randCol)));
     }
   }
+  assignSquareGroups(shapes);
 };
 
 function draw() {
