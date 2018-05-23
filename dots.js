@@ -182,122 +182,190 @@ function updateCircles(circles) {
   }
 }
 
+var newOperation = function (key, value, preFunc) {
+    var def = {
+        "key": "",
+        "value": "",
+        "pre": noOp
+    }
+    def.key = key;
+    def.value = value;
+    if (preFunc !== null) {
+      def.preFunc = preFunc;
+    }
+    return def;
+}
+
+function operate(operations) {
+    var op = operations.pop();
+    if (op === undefined) {
+        return false;
+    }
+    console.log("Setting operation", op);
+    op.pre();
+    var result = operateOnKey(op.key);
+    if (result !== null) {
+      masterControl(result.newT, result.remainder, result.direction);
+    }
+    return true;
+}
 
 /* Processing Environment Related Functions */
 function keyTyped() {
-  var newT = 0;
-  var alternate = false;
-  var asRings = false;
-  var remainder = 0;
-  var doOp = true;
-  var random = false;
-  var gradient = false;
-  var clockwise = false;
-  var allAsOne = false;
-  var move = false;
-  var backToStart = false;
-  var moveOnlyVertically = false;
-  var moveOnlyHorizontally = false;
-  var direction = 1;
-  var increaseRadius = false;
-  var decreaseRadius = false;
-  var drawTriangles = false;
-  var drawEllipses = false;
-  var drawLines = false;
-  var flip = false;
+  console.log("Enter: keyTyped");
+  var result = operateOnKey(key);
+  if (result !== null) {
+      console.log("Result is not null:", result);
+      masterControl(result.newT, result.remainder, result.direction);
+  }
+  console.log("Exit: keyTyped");
+}
 
+var alternate = false;
+var asRings = false;
+var random = false;
+var gradient = false;
+var clockwise = false;
+var allAsOne = false;
+var move = false;
+var backToStart = false;
+var moveOnlyVertically = false;
+var moveOnlyHorizontally = false;
+var increaseRadius = false;
+var decreaseRadius = false;
+var drawTriangles = false;
+var drawEllipses = false;
+var drawLines = false;
+var flip = false;
+
+function defaultVars() {
+  alternate = false;
+  asRings = false;
+  random = false;
+  gradient = false;
+  clockwise = false;
+  allAsOne = false;
+  move = false;
+  backToStart = false;
+  moveOnlyVertically = false;
+  moveOnlyHorizontally = false;
+  increaseRadius = false;
+  decreaseRadius = false;
+  drawTriangles = false;
+  drawEllipses = false;
+  drawLines = false;
+  flip = false;
+}
+
+function operateOnKey(key) {
+  var doOp = true;
+  var newT = 0;
+  var remainder = 0;
+  var direction = 1;
+  defaultVars();
   switch (key) {
-    case "v":
-      moveOnlyVertically = true;
-      direction = -1;
-      break;
-    case "V":
-      moveOnlyVertically = true;
-      direction = 1;
-      break;
-    case "h":
-      moveOnlyHorizontally = true;
-      direction = -1;
-      break;
-    case "H":
-      moveOnlyHorizontally = true;
-      direction = 1;
-      break;
-    case "a":
-      allAsOne = true;
-      break;
-    case "A":
-      allAsOne = true;
-      alternate = true;
-      break;
-    case "s":
-      break;
-    case "S":
-      newT = (.5) * p;
-      break;
-    case "g":
-      clockwise = true;
-      gradient = true;
-      break;
-    case "G":
-      gradient = true;
-      break;
-    case "r":
-    case "R":
-      random = true;
-      break;
-    case "i":
-    case "I":
-      asRings= true;
-      remainder = 1;
-      break;
-    case "o":
-    case "O":
-      asRings = true;
-      remainder = 0;
-      break;
-    case "m":
-      move = true;
-      break;
-    case "M":
-      move = false;
-      break;
-    case "b":
-    case "B":
-      backToStart = true;
-      break;
-    case "c":
-      clearScreen = false;
-      doOp = false;
-      break;
-    case "C":
-      clearScreen = true;
-      doOp = false;
-      break;
-    case "=": // easier to press than holding shift, can easily move between - and + (proxy)
-      increaseRadius = true;
-      break;
-    case "-":
-      decreaseRadius = true;
-      break;
-    case "t":
-      drawTriangles = true;
-      break;
-    case "e":
-      drawEllipses = true;
-      break;
-    case "f":
-      flip = true;
-      break;
-    case "l":
-      drawLines = true;
-      break;
-    default:
-      doOp = false;
+  case "v":
+    moveOnlyVertically = true;
+    direction = -1;
+    break;
+  case "V":
+    moveOnlyVertically = true;
+    direction = 1;
+    break;
+  case "h":
+    moveOnlyHorizontally = true;
+    direction = -1;
+    break;
+  case "H":
+    moveOnlyHorizontally = true;
+    direction = 1;
+    break;
+  case "a":
+    allAsOne = true;
+    break;
+  case "A":
+    allAsOne = true;
+    alternate = true;
+    break;
+  case "s":
+    break;
+  case "S":
+    newT = (.5) * p;
+    break;
+  case "g":
+    clockwise = true;
+    gradient = true;
+    break;
+  case "G":
+    gradient = true;
+    break;
+  case "r":
+  case "R":
+    random = true;
+    break;
+  case "i":
+  case "I":
+    asRings= true;
+    remainder = 1;
+    break;
+  case "o":
+  case "O":
+    asRings = true;
+    remainder = 0;
+    break;
+  case "m":
+    move = true;
+    break;
+  case "M":
+    move = false;
+    break;
+  case "b":
+  case "B":
+    backToStart = true;
+    break;
+  case "c":
+    clearScreen = false;
+    doOp = false;
+    break;
+  case "C":
+    clearScreen = true;
+    doOp = false;
+    break;
+  case "=": // easier to press than holding shift, can easily move between - and + (proxy)
+    increaseRadius = true;
+    break;
+  case "-":
+    decreaseRadius = true;
+    break;
+  case "t":
+    drawTriangles = true;
+    break;
+  case "e":
+    drawEllipses = true;
+    console.log("drawing ellipses");
+    break;
+  case "f":
+    flip = true;
+    break;
+  case "l":
+    drawLines = true;
+    console.log("drawing lines");
+    break;
+  default:
+    doOp = false;
   }
   if (!doOp) {
-    return;
+    console.log("!dOp: keyTyped");
+    return null;
   }
+  return {
+    "newT": newT,
+    "remainder": remainder,
+    "direction": direction,
+  }
+};
+
+function masterControl(newT, remainder, direction) {
   var counter = 0;
   for (var l = 0; l < layers.length; l++) {
     var layerLength = layers[l].length;
@@ -378,9 +446,70 @@ function keyTyped() {
       }
     }
   }
+};
+
+function noOp() { return; }
+
+function wait(t) {
+    if (t < 10) {
+        t = t * 1000;
+    }
+    setTimeout(t);
 }
 
+function commandsToOperations(commands) {
+    var ops = [];
+    for (var i = 0; i < commands.length; i++) {
+        ops.push(newOperation(
+            commands[i],
+            true,
+            noOp)
+        );
+    }
+    return ops;
+}
+
+var commands = "";
+function updateOperations() {
+    console.log("Calling update operations");
+    var parsedCommands = commandsToOperations(commands);
+    if (parsedCommands.length > 0) {
+        console.log("Updating operations via commands: ", parsedCommands);
+        // globals
+        operations = operations.concat(parsedCommands);
+        commands = "";
+    }
+}
+var operations = [
+    newOperation("l", true, noOp),
+    newOperation("e", true, noOp),
+    newOperation("l", true, noOp),
+    newOperation("e", true, noOp),
+    newOperation("c", true, noOp),
+    newOperation("m", true, noOp),
+    newOperation("b", true, wait(3)),
+    newOperation("m", true, wait(3)),
+    newOperation("l", true, noOp),
+    newOperation("=", true, noOp),
+    newOperation("=", true, noOp),
+    newOperation("=", true, noOp),
+    newOperation("=", true, noOp),
+    newOperation("-", true, noOp),
+    newOperation("-", true, noOp),
+    newOperation("-", true, noOp),
+    newOperation("=", true, noOp)
+];
+var rate = 30;
 function setup() {
+  setInterval(
+    function() { operate(operations) },
+    2000
+  );
+  setInterval(
+        updateOperations,
+        10*1000
+  );
+  frameRate(rate);
   createCanvas(window.innerWidth, window.innerHeight);
   var L = Math.floor(ringDistance / (cRadius + edgeBuffer));
   for (var i = 1; i <= L; i++) {
@@ -389,7 +518,6 @@ function setup() {
 }
 
 function draw() {
-  frameRate(30);
   if (clearScreen) {
     clear();
   }
