@@ -2,15 +2,15 @@ var rows = 25;
 var columns = 50;
 var length = 5;
 var layers = 10;
-var t = 100; 
+var t = 100;
 var colLen = 0;
-var colLenHalf = 0; 
+var colLenHalf = 0;
 var rowLen = 0;
-var rowLenHalf = 0; 
+var rowLenHalf = 0;
 var ELLIPSE = 0;
 var LINE = 1;
 var noOp = function() {};
-var drawFunc = noOp; 
+var drawFunc = noOp;
 
 //var clearing = setInterval(function() { clear(); background(0); }, 2000);
 
@@ -21,7 +21,7 @@ function drawGrid(shape, usingGrowth) {
     rowLenHalf = Math.ceil(rowLen / 2);
     for (var i = 0; i < rows; i++) {
         for (var j = 0; j < columns; j++) {
-            var centerX = j * colLen + colLenHalf; 
+            var centerX = j * colLen + colLenHalf;
             var centerY = i * rowLen  + rowLenHalf;
             var r = 255 * noise(t + 10, t + 10);
             var g = 255 * noise(t + 20, t + 20);
@@ -34,7 +34,7 @@ function drawGrid(shape, usingGrowth) {
                 if (usingGrowth) {
                     ellipse(centerX, centerY, length + length * noise(t + 40, t+ 40), length + length * noise(t + 40, t + 40));
                 } else {
-                    ellipse(centerX, centerY, length, length); 
+                    ellipse(centerX, centerY, length, length);
                 }
             }
         }
@@ -61,7 +61,7 @@ function drawLines(n) {
     t += 0.01;
 }
 
-function drawMoire() { 
+function drawMoire() {
     clear();
     background(0);
     for (var i = 0; i < layers; i++) {
@@ -76,7 +76,7 @@ function drawDottedLine() {
     var colLen = Math.ceil(windowHeight / columns);
     var colLenHalf = Math.ceil(colLen / 2)
     for (var j = 0; j < columns; j++) {
-        var centerX = j * colLen + colLenHalf; 
+        var centerX = j * colLen + colLenHalf;
         var centerY = rowLenHalf;
         var r = 255 * noise(t + 10, t + 10);
         var g = 255 * noise(t + 20, t + 10);
@@ -99,7 +99,7 @@ function drawWobblingCircles() {
     var withGrowth = true;
     push();
     translate(100 * noise(t) * Math.cos(t), 100 * noise(t) * Math.sin(t));
-    drawGrid(ELLIPSE, withGrowth); 
+    drawGrid(ELLIPSE, withGrowth);
     pop();
     t += 0.01;
 }
@@ -134,10 +134,8 @@ function drawEllipseKaleidoscope() {
     for (var i = 0; i < layers; i++) {
         push();
         var dir = (-1)**i;
-        translate(i * windowWidth / layers, i * windowHeight / layers);
-        //translate(windowWidth / 2, windowHeight / 2);
-        rotate(((2*PI * i / layers) + t) * dir);
-        //rotate((t + i) * dir);
+        translate(windowWidth / 2, windowHeight / 2);
+        rotate((t + i) * dir);
         drawGrid(ELLIPSE, true);
         pop();
     }
@@ -150,8 +148,7 @@ function drawLineKaleidoscope() {
         push();
         var dir = (-1)**i;
         translate(windowWidth / 2, windowHeight / 2);
-        translate(noise(t) * 50 * dir, noise(t) * 50 * dir);
-        rotate(((2*PI * i / layers) + t) * dir);
+        rotate((t + i) * dir);
         drawGrid(LINE, withoutGrowth);
         pop();
     }
@@ -164,8 +161,7 @@ function drawScales() {
         push();
         var dir = (-1)**i;
         translate(windowWidth / 2, windowHeight / 2);
-        //translate(50 * noise(t + 40, t + 40), 50 * noise(t + 40, t + 40)); 
-        translate(100 * Math.random() * dir, 100 * Math.random() * dir);
+        translate(50 * noise(t + 40, t + 40), 50 * noise(t + 40, t + 40));
         rotate((t + i) * dir);
         drawGrid(ELLIPSE, withoutGrowth);
         pop();
@@ -174,22 +170,21 @@ function drawScales() {
 }
 
 
-function drawRotatedLayers() {    
+function drawRotatedLayers() {
     clear();
     background(0);
     var x = 0;
-    var y = 0; 
+    var y = 0;
     for (var i = 0; i < layers; i++) {
         push();
         // IDEA: place the layers on points of an ellipse surrounding the canvas
         // rotation may not be necessary
-        x = Math.cos(2 * PI * i/layers) * windowWidth / 2; 
-        y = Math.sin(2 * PI * i/layers) * windowHeight / 2; 
+        x = Math.cos(2 * PI * i/layers) * windowWidth / 2;
+        y = Math.sin(2 * PI * i/layers) * windowHeight / 2;
         translate(x, y);
-        //rotate(PI * i / layers); 
+        //rotate(PI * i / layers);
         drawGrid(LINE);
         pop();
-
     }
 }
 
@@ -258,19 +253,19 @@ function keyTyped() {
             drawFunc = drawKnots;
             break;
         case "6":
-            drawFunc = drawEllipseKaleidoscope; 
+            drawFunc = drawEllipseKaleidoscope;
             break;
         case "7":
-            drawFunc = drawLineKaleidoscope; 
+            drawFunc = drawLineKaleidoscope;
             break;
         case "8":
-            drawFunc = drawScales; 
+            drawFunc = drawScales;
             break;
         case "9":
-            drawFunc = drawMoire; 
+            drawFunc = drawMoire;
             break;
         case "0":
-            drawFunc = drawRotatedLayers; 
+            drawFunc = drawRotatedLayers;
             break;
         case "c":
             clear();
@@ -280,20 +275,20 @@ function keyTyped() {
             drawFunc = noOp;
             break;
         case "r":
-            stallRotation = true; 
+            stallRotation = true;
             break;
     }
 }
 // what is happening here with the waves?
 // I had a lot of trouble updating the waves' properties
 // I would prefer an OOP-like approach
-var waves = []; 
+var waves = [];
 function setup() {
     for (var i = 0; i < 2; i++) {
-        waves.push(wave(i * 20, 0)); 
+        waves.push(wave(i * 20, 0));
     }
     for (var i = 0; i < 2; i++) {
-        waves.push(wave(0, 50 + i * 20)); 
+        waves.push(wave(0, 50 + i * 20));
     }
     createCanvas(windowWidth, windowHeight);
     background(0);
