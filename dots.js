@@ -15,6 +15,7 @@ var ringDistance = diameter - cRadius;
 var TRIANGLE = "triangle";
 var ELLIPSE = "ellipse";
 var LINE = "line";
+var BOX = "box";
 
 var circle = function(i, x, y, radius, ringDistance, t, color) {
   return {
