@@ -11,8 +11,7 @@ var ELLIPSE = 0;
 var LINE = 1;
 var noOp = function() {};
 var drawFunc = noOp;
-
-//var clearing = setInterval(function() { clear(); background(0); }, 2000);
+var numberOfWaves = 6;
 
 function drawGrid(shape, usingGrowth) {
     colLen = Math.ceil(windowWidth / columns);
@@ -27,10 +26,12 @@ function drawGrid(shape, usingGrowth) {
             var g = 255 * noise(t + 20, t + 20);
             var b = 255 * noise(t + 30, t + 30);
             if (shape == LINE) {
-                stroke(r, g, b);
+                //stroke(r, g, b);
+                stroke(r, r, r);
                 line(j * colLen, i * rowLen, (j + 1) * colLen, (i + 1) * rowLen);
             } else {
-                fill(r, g, b);
+                //fill(r, g, b);
+                fill(r, r, r);
                 if (usingGrowth) {
                     ellipse(centerX, centerY, length + length * noise(t + 40, t+ 40), length + length * noise(t + 40, t + 40));
                 } else {
@@ -48,9 +49,9 @@ function drawLines(n) {
         var r = 255 * noise(t + 10, t + 10);
         var g = 255 * noise(t + 20, t + 20);
         var b = 255 * noise(t + 30, t + 30);
-        //line(i, 0, i, windowHeight);
         noFill();
-        stroke(r, g, b);
+        //stroke(r, g, b);
+        stroke(r, r, r);
         bezier(
             i, 0,
             noise(t + i, t + i) * windowWidth, noise(t + i, t + i) * windowHeight,
@@ -122,7 +123,8 @@ function drawKnots() {
         translate(windowWidth / 2, windowHeight / 2);
         var dir = (-1)**i;
         translate(50 * Math.cos(t + i) * dir, 50 * Math.sin(t + i) * dir);
-        rotate((t + i) * dir);
+       // rotate((t + i) * dir);
+        rotate(2 * PI * i / layers * dir);
         drawGrid(ELLIPSE, withGrowth);
         pop();
     }
@@ -177,8 +179,6 @@ function drawRotatedLayers() {
     var y = 0;
     for (var i = 0; i < layers; i++) {
         push();
-        // IDEA: place the layers on points of an ellipse surrounding the canvas
-        // rotation may not be necessary
         x = Math.cos(2 * PI * i/layers) * windowWidth / 2;
         y = Math.sin(2 * PI * i/layers) * windowHeight / 2;
         translate(x, y);
@@ -189,8 +189,8 @@ function drawRotatedLayers() {
 }
 
 
-function wave(xShift, yShift, size) {
-    var xspacing = 16;    // Distance between each horizontal location
+function wave(xShift, yShift, centerX, centerY, size) {
+    var xspacing = 50;    // Distance between each horizontal location
     var period = 500.0;   // How many pixels before the wave repeats
     if (xShift === undefined) {
         xShift = 0;
@@ -199,18 +199,31 @@ function wave(xShift, yShift, size) {
         yShift = 0;
     }
     if (size === undefined) {
-        size = 16;
+        size = 5;
     }
+    if (centerX === undefined) {
+        centerX = windowWidth/2;
+    }
+    if (centerY === undefined) {
+        centerY = windowHeight/2;
+    }
+    var cofactor = 50;
     return {
         xspacing: xspacing,    // Distance between each horizontal location
         yvalues: new Array(floor((windowWidth + xspacing)/xspacing)),
         theta: 0.0,
         amplitude: 75.0, // Height of wave
         period: period,   // How many pixels before the wave repeats
-        dx: (TWO_PI / period) * xspacing, // Value for incrementing x
+        dx: (TWO_PI / period) * xspacing / cofactor, // Value for incrementing x
         xShift: xShift,
         yShift: yShift,
-        size: size
+        size: size,
+        centerX: centerX,
+        centerY: centerY,
+        r: 0,
+        g: 0,
+        b: 0
+
     }
 }
 function drawWave(wave) {
@@ -224,15 +237,20 @@ function drawWave(wave) {
     }
 
     noStroke();
-    var r = 255 * noise(t + 10, t + 10);
-    var g = 255 * noise(t + 20, t + 20);
-    var b = 255 * noise(t + 30, t + 30);
-    fill(r, g, b);
+    var tt  = t/100;
+    var r = 255 * noise(tt + 1, tt + 1);
+    var g = 255 * noise(tt + 2, tt + 2);
+    var b = 255 * noise(tt + 3, tt + 3);
+    var coFactor = 2;
+    stroke(r, g, b);
     //A simple way to draw the wave with an ellipse at each location
     for (var x = 0; x < wave.yvalues.length; x++) {
-        ellipse(x * wave.xspacing + wave.xShift, windowHeight/2 + wave.yvalues[x] + wave.yShift, wave.size);
+       line(x * wave.xspacing + wave.xShift * Math.cos(t/10),
+            wave.centerY - coFactor * windowHeight * noise(tt + x, tt + x),
+            x * wave.xspacing + wave.xShift * Math.cos(t/10),
+            wave.centerY + coFactor * windowHeight * noise(tt + x, tt + x));
     }
-    t += 0.01;
+    t += 0.002;
 }
 
 function keyTyped() {
@@ -279,16 +297,14 @@ function keyTyped() {
             break;
     }
 }
-// what is happening here with the waves?
-// I had a lot of trouble updating the waves' properties
-// I would prefer an OOP-like approach
+
 var waves = [];
 function setup() {
-    for (var i = 0; i < 2; i++) {
-        waves.push(wave(i * 20, 0));
-    }
-    for (var i = 0; i < 2; i++) {
-        waves.push(wave(0, 50 + i * 20));
+    numberOfWaves = 25;
+    var colors = [[255, 255, 255], [255, 0, 0], [0, 255, 0], [0, 0, 255]];
+    for (var i = 0; i < numberOfWaves; i++) {
+        var w = wave(100, 0, 0, 0);
+        waves.push(w);
     }
     createCanvas(windowWidth, windowHeight);
     background(0);
@@ -298,7 +314,39 @@ function drawWaves(waves) {
     return function() {
         background(0);
         for (var i = 0; i < waves.length; i++) {
+            push();
+            translate(windowWidth / 2 + 50 * Math.cos(t/10), windowHeight / 2 + 50 * Math.sin(t/10));
+            rotate((t/100+ i) * (-1)**i);
             drawWave(waves[i]);
+            pop();
+        }
+        for (var i = 0; i < waves.length; i++) {
+            push();
+            translate(50 * Math.cos(t/10), 50 * Math.sin(t/10));
+            rotate((t/1000 + i) * (-1)**i);
+            drawWave(waves[i]);
+            pop();
+        }
+        for (var i = 0; i < waves.length; i++) {
+            push();
+            translate(windowWidth * 50 * Math.cos(t/10), windowHeight + 50 * Math.sin(t/10));
+            rotate((t/100 + i) * (-1)**i);
+            drawWave(waves[i]);
+            pop();
+        }
+        for (var i = 0; i < waves.length; i++) {
+            push();
+            translate(0, windowHeight + 50 * Math.sin(t/10));
+            rotate((t/100 + i) * (-1)**i);
+            drawWave(waves[i]);
+            pop();
+        }
+        for (var i = 0; i < waves.length; i++) {
+            push();
+            translate(windowWidth + 50 * Math.cos(t/10), 0);
+            rotate((t/100 + i) * (-1)**i);
+            drawWave(waves[i]);
+            pop();
         }
     }
 }
