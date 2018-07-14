@@ -3,7 +3,9 @@ var drawFunc = noOp;
 var t = 0;
 var tDelta = 0.05;
 var D = 0;
-var rotateFunc = function(c) {}; 
+var rotateFunc = function(c) {};
+var shiftTranslate = true;
+var curZ = 0;
 
 function keyTyped() {
     switch (key) {
@@ -11,7 +13,7 @@ function keyTyped() {
             drawFunc = drawLinedCircles;
             break;
         case "2":
-            drawFunc = drawSpiralingSquares; 
+            drawFunc = drawSpiralingSquares;
             break;
         case "x":
             rotateFunc = rotateX;
@@ -21,6 +23,12 @@ function keyTyped() {
             break;
         case "z":
             rotateFunc = rotateZ;
+            break;
+        case "n":
+            shiftTranslate = false;
+            break;
+        case "N":
+            shiftTranslate = true;
             break;
         case "c":
             clear();
@@ -42,23 +50,30 @@ function drawSpirals(centerX, centerY, c, rot, shift) {
     var theta = 0;
     var rCoef = 1;
     var wDampen = (1/1.15);;
-    var tDampen = d / w; 
+    var tDampen = d / w;
     tDampen = (1/25);
     if (c !== undefined) { rCoef = c; }
-    if (rot === undefined) { rot = rotateX; } 
-    if (shift === undefined) { shift = 0; } 
+    if (rot === undefined) { rot = rotateX; }
+    if (shift === undefined) { shift = 0; }
     for (var i = 1; i <= d; i++) {
        push();
        //translate(centerX + Math.cos(rCoef * t * tDampen) * 100, centerY + Math.sin(rCoef * t * tDampen) * 100);
        //translate(centerX * Math.cos(rCoef * t * tDampen), centerY * Math.sin(rCoef * t * tDampen));
-       translate(centerX, centerY, 500 * Math.cos(rCoef * (t * tDampen + shift)));
+       var st = 500 * Math.cos(rCoef * (t * tDampen + shift));
+       if (shiftTranslate) {
+           curZ = st;
+           // keep at current Z
+           translate(centerX, centerY, st);
+       } else {
+           translate(centerX, centerY, curZ);
+       }
        //translate(centerX, centerY + Math.sin(D + shift) * 100);
        var rVal = rCoef * (delta * i + (t * tDampen * i));
        rVal = rCoef * t * tDampen;
        rot(rVal);
        noFill();
        //w = w / 1.5 * 1.414 - weight;
-       w = w * wDampen; 
+       w = w * wDampen;
        if (i > d) {
            rotateZ(rVal);
            fill(
@@ -102,22 +117,22 @@ function drawSpiralingSquares() {
     // 3D
     var shift = PI/10;
     shift =  0;
-    drawSpirals(cX, cY, 1, rotateFunc); 
-    drawSpirals(cX - v, cY, 1, rotateFunc, shift) 
-    drawSpirals(cX + v, cY, -1, rotateFunc, shift * 2); 
+    drawSpirals(cX, cY, 1, rotateFunc);
+    drawSpirals(cX - v, cY, 1, rotateFunc, shift)
+    drawSpirals(cX + v, cY, -1, rotateFunc, shift * 2);
     drawSpirals(cX + v / 2, cY, 1, rotateFunc, shift * 3);
-    drawSpirals(cX - v /2, cY, -1, rotateFunc, shift * 4); 
-    drawSpirals(cX + v * 1.5, cY, 1, rotateFunc, shift * 5); 
-    drawSpirals(cX - v * 1.5, cY, -1, rotateFunc, shift * 6); 
-    drawSpirals(cX + v * 2, cY, 1, rotateFunc, shift * 7); 
-    drawSpirals(cX - v * 2, cY, -1, rotateFunc, shift * 8); 
+    drawSpirals(cX - v /2, cY, -1, rotateFunc, shift * 4);
+    drawSpirals(cX + v * 1.5, cY, 1, rotateFunc, shift * 5);
+    drawSpirals(cX - v * 1.5, cY, -1, rotateFunc, shift * 6);
+    drawSpirals(cX + v * 2, cY, 1, rotateFunc, shift * 7);
+    drawSpirals(cX - v * 2, cY, -1, rotateFunc, shift * 8);
     D += 0.01;
     /*
-    drawSpirals(cX, cY, 1, rotateZ); 
-    drawSpirals(cX - v, cY, 1, rotateY); 
-    drawSpirals(cX + v, cY, -1, rotateY); 
+    drawSpirals(cX, cY, 1, rotateZ);
+    drawSpirals(cX - v, cY, 1, rotateY);
+    drawSpirals(cX + v, cY, -1, rotateY);
     drawSpirals(cX, cY + v, 1, rotateX);
-    drawSpirals(cX, cY - v, -1, rotateX); 
+    drawSpirals(cX, cY - v, -1, rotateX);
     */
     /* 2D
     drawSpirals(v, 0, -1, rotateX);
@@ -190,7 +205,7 @@ function drawLinedCircle(x, y, r, n) {
         t += 0.01;
     };
     function grate(x, y, r, n) {
-        var delta = (PI / 2) / (n / 2); 
+        var delta = (PI / 2) / (n / 2);
         var theta = 0;
         stroke(255 * noise(t / 50 + 10), 255 * noise(t / 50 + 20), 255  * noise(t / 50 + 30));
             // picking two points on the circle, opposite eachother
@@ -199,7 +214,7 @@ function drawLinedCircle(x, y, r, n) {
             // circle is bound by these values
             // adding t causes a nice effect of growth and contractions of the lines
             /*
-            var x1 = x + Math.cos(theta + t) * r; 
+            var x1 = x + Math.cos(theta + t) * r;
             var x2 = x + Math.cos(PI - theta + t) * r;
             line(x1, topY, x2, topY);
             line(x1, bottomY, x2, bottomY);
@@ -209,7 +224,7 @@ function drawLinedCircle(x, y, r, n) {
             */
             // only move along the 1st quadrant.
             // [0, PI / 2];
-        for (var i = 0; i < Math.floor(n / 2); i++) { 
+        for (var i = 0; i < Math.floor(n / 2); i++) {
             if (theta != 0) {
                 line(
                     x - Math.floor(r * Math.cos(theta)),
@@ -217,14 +232,14 @@ function drawLinedCircle(x, y, r, n) {
                     x + Math.floor(r * Math.cos(theta)),
                     y - Math.floor(r * Math.sin(theta))
                 );
-            } 
+            }
             line(
                 x - Math.floor(r * Math.cos(theta)),
                 y + Math.floor(r * Math.sin(theta)),
                 x + Math.floor(r * Math.cos(theta)),
                 y + Math.floor(r * Math.sin(theta))
             )
-            theta = theta + delta; 
+            theta = theta + delta;
         }
     };
     //grate(x, y, r, n);
