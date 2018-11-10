@@ -41,7 +41,7 @@ function keyTyped() {
 }
 
 var coef = 1;
-function drawSpirals(centerX, centerY, c, rot, shift) {
+function drawSpirals(centerX, centerY, c, rot, shift, colorBase) {
     var weight = 1.5;
     var w = windowWidth;
     var h = w;
@@ -55,11 +55,13 @@ function drawSpirals(centerX, centerY, c, rot, shift) {
     if (c !== undefined) { rCoef = c; }
     if (rot === undefined) { rot = rotateX; }
     if (shift === undefined) { shift = 0; }
+    if (colorBase === undefined) { colorBase = 0; }
     for (var i = 1; i <= d; i++) {
        push();
        //translate(centerX + Math.cos(rCoef * t * tDampen) * 100, centerY + Math.sin(rCoef * t * tDampen) * 100);
        //translate(centerX * Math.cos(rCoef * t * tDampen), centerY * Math.sin(rCoef * t * tDampen));
        var st = 500 * Math.cos(rCoef * (t * tDampen + shift));
+       var st = shift + 500 * Math.cos(rCoef * (t * tDampen));
        if (shiftTranslate) {
            curZ = st;
            // keep at current Z
@@ -85,9 +87,9 @@ function drawSpirals(centerX, centerY, c, rot, shift) {
        } else {
            strokeWeight(weight);
            stroke(
-               255 * noise(t/50+ 10) + t,
-               255 * noise(t/50 + 20) + t,
-               255 * noise(t/50 + 30) + t
+               (255 - colorBase) * noise(t/50+ 10) + colorBase,
+               (255 - colorBase) * noise(t/50 + 20) + colorBase,
+               (255 - colorBase) * noise(t/50 + 30) + colorBase
            );
        }
        //box(w/2 + w/2 * Math.sin(D + shift));
@@ -116,16 +118,19 @@ function drawSpiralingSquares() {
     // X formation
     // 3D
     var shift = PI/10;
-    shift =  0;
+    shift =  -200;
+    shift = 0;
     drawSpirals(cX, cY, 1, rotateFunc);
-    drawSpirals(cX - v, cY, 1, rotateFunc, shift)
-    drawSpirals(cX + v, cY, -1, rotateFunc, shift * 2);
-    drawSpirals(cX + v / 2, cY, 1, rotateFunc, shift * 3);
-    drawSpirals(cX - v /2, cY, -1, rotateFunc, shift * 4);
-    drawSpirals(cX + v * 1.5, cY, 1, rotateFunc, shift * 5);
-    drawSpirals(cX - v * 1.5, cY, -1, rotateFunc, shift * 6);
-    drawSpirals(cX + v * 2, cY, 1, rotateFunc, shift * 7);
-    drawSpirals(cX - v * 2, cY, -1, rotateFunc, shift * 8);
+    // 4 3 2 1 0 1 2 3 4 //
+    // outer 
+    drawSpirals(cX + v * 2, cY, 1, rotateFunc, shift * 4, 25);
+    drawSpirals(cX - v * 2, cY, -1, rotateFunc, shift * 4, 25);
+    drawSpirals(cX + v * 1.5, cY, 1, rotateFunc, shift * 3, 50);
+    drawSpirals(cX - v * 1.5, cY, -1, rotateFunc, shift * 3, 50);
+    drawSpirals(cX - v, cY, 1, rotateFunc, shift * 2, 75)
+    drawSpirals(cX + v, cY, -1, rotateFunc, shift * 2, 75);
+    drawSpirals(cX + v / 2, cY, 1, rotateFunc, shift, 100);
+    drawSpirals(cX - v / 2, cY, -1, rotateFunc, shift, 100);
     D += 0.01;
     /*
     drawSpirals(cX, cY, 1, rotateZ);
