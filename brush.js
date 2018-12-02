@@ -57,12 +57,6 @@ function impressionistBrushes() {
         //var pixel = img.get(x, y);
         var index = 4 * (x + y * img.width);
         var pixelColor = color(
-                /*
-                pixel[0],
-                pixel[1],
-                pixel[2],
-                pixel[3]
-                */
                 img.pixels[index],
                 img.pixels[index + 1],
                 img.pixels[index + 2],
